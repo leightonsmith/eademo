@@ -12,7 +12,7 @@ grails.project.dependency.resolution = {
         // specify dependency exclusions here; for example, uncomment this to disable ehcache:
         // excludes 'ehcache'
     }
-    log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     checksums true // Whether to verify checksums on resolve
 
     repositories {
@@ -30,6 +30,10 @@ grails.project.dependency.resolution = {
         //mavenRepo "http://repository.codehaus.org"
         //mavenRepo "http://download.java.net/maven/2/"
         //mavenRepo "http://repository.jboss.com/maven2/"
+        // Required for guice dependency of spring open id plugin.
+        // It appears the suggested google repository is now password protected 
+        mavenRepo "https://repository.jboss.org/nexus/content/repositories/thirdparty-uploads"
+
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
@@ -53,5 +57,6 @@ grails.project.dependency.resolution = {
 
         compile ':cache:1.0.0'
         compile ':spring-security-core:1.2.7.3'
+        compile ':spring-security-openid:1.0.4'
     }
 }
