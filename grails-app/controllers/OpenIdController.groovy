@@ -42,7 +42,7 @@ class OpenIdController {
 			return
 		}
 
-		[openIdPostUrl: "${request.contextPath}$openIDAuthenticationFilter.filterProcessesUrl",
+		render view:"buttonAuth", model:[openIdPostUrl: "${request.contextPath}$openIDAuthenticationFilter.filterProcessesUrl",
 		 daoPostUrl:    "${request.contextPath}${config.apf.filterProcessesUrl}",
 		 persistentRememberMe: config.rememberMe.persistent,
 		 rememberMeParameter: config.rememberMe.parameter,
