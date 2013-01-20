@@ -94,3 +94,7 @@ log4j = {
 grails.plugins.springsecurity.userLookup.userDomainClassName = 'org.smith.eademo.User'
 grails.plugins.springsecurity.userLookup.authorityJoinClassName = 'org.smith.eademo.UserRole'
 grails.plugins.springsecurity.authority.className = 'org.smith.eademo.Role'
+
+grails.plugins.springsecurity.openid.domainClass = 'org.smith.eademo.OpenID'
+grails.plugins.springsecurity.rememberMe.persistent = true
+grails.plugins.springsecurity.rememberMe.persistentToken.domainClassName = 'org.smith.eademo.PersistentLogin'
