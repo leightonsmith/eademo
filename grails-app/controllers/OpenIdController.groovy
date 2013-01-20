@@ -5,6 +5,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.savedrequest.DefaultSavedRequest
 
+import org.codehaus.groovy.grails.plugins.springsecurity.GrailsUser
+import org.springframework.security.core.authority.GrantedAuthorityImpl
+import org.springframework.security.core.context.SecurityContextHolder as SCH
+
 import org.smith.eademo.User
 import org.smith.eademo.Role
 import org.smith.eademo.UserRole
@@ -58,31 +62,35 @@ class OpenIdController {
 	 * in the session rather than passing it between submits so the user has no opportunity
 	 * to change it.
 	 */
-	def createAccount = { OpenIdRegisterCommand command ->
+    def createAccount = {
+       def config = SpringSecurityUtils.securityConfig
 
-		String openId = session[OIAFH.LAST_OPENID_USERNAME]
-		if (!openId) {
-			flash.error = 'Sorry, an OpenID was not found'
-			return [command: command]
-		}
+       String openId = session[OIAFH.LAST_OPENID_USERNAME]
+       if (!openId) {
+          flash.error = 'Sorry, an OpenID was not found'
+          redirect uri: config.failureHandler.defaultFailureUrl
+          return
+       }
 
-		if (!request.post) {
-			// show the form
-			command.clearErrors()
-			copyFromAttributeExchange command
-			return [command: command, openId: openId]
-		}
+       def user = new GrailsUser(openId, 'password', true, true,
+             true, true, [new GrantedAuthorityImpl('ROLE_USER')], 0)
 
-		if (command.hasErrors()) {
-			return [command: command, openId: openId]
-		}
+       // ok, this is how the example fakes it; we can grab/create the account above, 
+       // and do the same thing...
+       SCH.context.authentication = new UsernamePasswordAuthenticationToken(
+             user, 'password', user.authorities)
 
-		if (!createNewAccount(command.username, command.password, openId)) {
-			return [command: command, openId: openId]
-		}
+       session.removeAttribute OIAFH.LAST_OPENID_USERNAME
+       session.removeAttribute OIAFH.LAST_OPENID_ATTRIBUTES
 
-		authenticateAndRedirect command.username
-	}
+       def savedRequest = session[DefaultSavedRequest.SPRING_SECURITY_SAVED_REQUEST_KEY]
+       if (savedRequest && !config.successHandler.alwaysUseDefault) {
+          redirect url: savedRequest.redirectUrl
+       }
+       else {
+          redirect uri: config.successHandler.defaultTargetUrl
+       }
+    }
 
 	/**
 	 * The registration page has a link to this action so an existing user who successfully
@@ -138,35 +146,6 @@ class OpenIdController {
 		else {
 			redirect uri: config.successHandler.defaultTargetUrl
 		}
-	}
-
-	/**
-	 * Create the user instance and grant any roles that are specified in the config
-	 * for new users.
-	 * @param username  the username
-	 * @param password  the password
-	 * @param openId  the associated OpenID
-	 * @return  true if successful
-	 */
-	protected boolean createNewAccount(String username, String password, String openId) {
-		boolean created = User.withTransaction { status ->
-			def config = SpringSecurityUtils.securityConfig
-
-			password = encodePassword(password)
-			def user = new User(username: username, password: password, enabled: true)
-
-			user.addToOpenIds(url: openId)
-
-			if (!user.save()) {
-				return false
-			}
-
-			for (roleName in config.openid.registration.roleNames) {
-				UserRole.create user, Role.findByAuthority(roleName)
-			}
-			return true
-		}
-		return created
 	}
 
 	protected String encodePassword(String password) {
