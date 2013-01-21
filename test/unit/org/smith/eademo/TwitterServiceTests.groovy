@@ -28,7 +28,9 @@ class TwitterServiceTests {
             service.sortMap(["+":"last","!":"first"]).join('&')
     }
 
-    // taken from the twitter example docs
+    // Building the oauth authentication was a bit tricky; hence we test a few of the 
+    // steps against known results; here, testing construction of the base signature
+    // string used to create the auth signature.
     void testMakeSignatureBase() {
         Map egMap = [
             status:  "Hello Ladies + Gentlemen, a signed OAuth request!",
@@ -47,6 +49,8 @@ class TwitterServiceTests {
             "POST", "https://api.twitter.com/1/statuses/update.json", egMap)
     }
 
+    // Checking another step against a known result from the twitter dev tools; making
+    // sure we agree on creating a signature from a base string.
     void testMakeSignature() {
         service.consumerSecret = "RKbTbRqPqjR2bCzM6MN0wCQI9v4woH5GjgzRNwcnUI"
         service.oauthTokenSecret = "tY5Hlsem7MwguVKeHlL4JVmG8WvNWu6TXTQaywZmI2Q" 
@@ -56,6 +60,8 @@ class TwitterServiceTests {
         assertEquals "4axXNn1LfUpsX%2FWSjlw9VNKEgDY%3D", service.percentEncode(sig)
     }
 
+    // Checking the final step; putting all the details together into an auth header 
+    // for a given query.
     void testMakeAuthHeader() {
         service.consumerSecret = "RKbTbRqPqjR2bCzM6MN0wCQI9v4woH5GjgzRNwcnUI"
         service.consumerKey = "08cnUGc55SxD0C5IixGG6w"

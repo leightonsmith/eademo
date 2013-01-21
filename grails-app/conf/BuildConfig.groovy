@@ -58,7 +58,6 @@ grails.project.dependency.resolution = {
         compile ':cache:1.0.0'
         compile ':spring-security-core:1.2.7.3'
         compile ':spring-security-openid:1.0.4'
-        // compile ':rest-client-builder:1.0.3'
         compile ":rest:0.7"
     }
 }
