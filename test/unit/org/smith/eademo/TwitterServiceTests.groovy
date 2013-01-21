@@ -59,10 +59,10 @@ class TwitterServiceTests {
     void testMakeAuthHeader() {
         service.consumerSecret = "RKbTbRqPqjR2bCzM6MN0wCQI9v4woH5GjgzRNwcnUI"
         service.consumerKey = "08cnUGc55SxD0C5IixGG6w"
-
         service.oauthTokenSecret = "tY5Hlsem7MwguVKeHlL4JVmG8WvNWu6TXTQaywZmI2Q" 
         service.oauthTokenKey = "118162545-ggJen71XWj0GO9nkBUiwBkf6KSaC1PaqytzEnPfc" 
         service.baseUrl = "http://api.twitter.com" 
+
         service.metaClass.makeNonce = { "15e407833297ffc67db94e7b243dce28" }
         service.metaClass.makeTimestamp= { "1358736074" }
 

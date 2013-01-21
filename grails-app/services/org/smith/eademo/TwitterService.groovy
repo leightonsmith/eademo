@@ -13,13 +13,12 @@ import java.math.BigInteger
 
 class TwitterService {
 
-    // Secrets requried to identify ourselves.
+    // Secrets and tokens used to identify us
     String consumerSecret;
     String consumerKey;
     String oauthTokenSecret;
     String oauthTokenKey;
     String baseUrl
-
 
     // Percent encode the given string. 
     // Note: this method doesn't work for internationalised characters, such as
