@@ -2,6 +2,7 @@ package org.smith.eademo
 
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.URIBuilder
+import groovyx.net.http.HttpResponseException
 import javax.crypto.*
 import javax.crypto.spec.*
 import static groovyx.net.http.Method.GET
@@ -71,26 +72,24 @@ class TwitterService {
         String path =  '/1.1/search/tweets.json'
         Map query = [q:queryExp]
 
-        // Note: this way of doing things actually works.
-        // we can extend this to get somewhere...
-        def http = new HTTPBuilder(baseUrl)
-        http.request(GET, JSON) { req ->
-            uri.path = '/1.1/search/tweets.json'
-            uri.query = query
-            headers.'Authorization' = makeAuthHeader("GET", path, query)
+        def tweets = []
+        try {
+            def http = new HTTPBuilder(baseUrl)
+            http.request(GET, JSON) { req ->
+                uri.path = '/1.1/search/tweets.json'
+                uri.query = query
+                headers.'Authorization' = makeAuthHeader("GET", path, query)
 
-            response.success = { resp, json ->
-                println "Query response: "
-                println "response -->"
-                println resp.dump()
-                println "response <--"
-                println "json -->"
-                println json.dump()
-                println "json <--"
+                response.success = { resp, json ->
+                    tweets = json['statuses'].collect { def status -> status }
+                }
             }
         }
-
-        // String url = "http://api.twitter.com/1.1/search/tweets.json?q={}"
+        // TODO: handle failure properly. We're just returning an empty list at present
+        catch (HttpResponseException e) {
+            log.warn "exception fetching tweets: ${e.message}"
+        }
+        return tweets
     }
 
     String makeAuthHeader(String method, String path, Map queryParams)

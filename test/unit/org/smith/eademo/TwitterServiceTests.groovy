@@ -72,4 +72,20 @@ class TwitterServiceTests {
         assertEquals expectedAuth, auth
     }
 
+    // Test method for exercising service against remote server...
+    // void testSearchTweets() {
+    //     service.consumerSecret = "RKbTbRqPqjR2bCzM6MN0wCQI9v4woH5GjgzRNwcnUI"
+    //     service.consumerKey = "08cnUGc55SxD0C5IixGG6w"
+    //     service.oauthTokenSecret = "tY5Hlsem7MwguVKeHlL4JVmG8WvNWu6TXTQaywZmI2Q" 
+    //     service.oauthTokenKey = "118162545-ggJen71XWj0GO9nkBUiwBkf6KSaC1PaqytzEnPfc" 
+    //     service.baseUrl = "http://api.twitter.com" 
+
+    //     def tweets = service.searchTweets('from:easportsfifa')
+    //     println "tweets size: ${tweets.size()}"
+    //     tweets.each { def tweet ->
+    //         println "got a tweet - ${tweet['text']}"
+    //     }
+    //     fail "failure so we see output on stdout"
+    // }
+
 }
