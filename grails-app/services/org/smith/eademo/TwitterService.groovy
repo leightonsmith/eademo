@@ -7,18 +7,24 @@ import javax.crypto.spec.*
 import static groovyx.net.http.Method.GET
 import static groovyx.net.http.ContentType.JSON
 
+import java.security.SecureRandom
+import java.math.BigInteger
+
 class TwitterService {
 
     // Secrets requried to identify ourselves.
     String consumerSecret;
+    String consumerKey;
     String oauthTokenSecret;
+    String oauthTokenKey;
+    String baseUrl
 
     def getTweets() {
         
         // Note: this way of doing things actually works.
         // we can extend this to get somewhere...
         def http = new HTTPBuilder( 'http://api.twitter.com' )
-        http.request( GET, JSON ) { req ->
+        http.request(GET, JSON) { req ->
             uri.path = '/1.1/search/tweets.json'
             uri.query = [ q: 'from:ea' ]
             headers.'Authorization' = 'OAuth oauth_consumer_key="08cnUGc55SxD0C5IixGG6w", oauth_nonce="fe4a7fe6c0373f232526bc9a6ef71270", oauth_signature="L9NRnvzcUFkgDiSBHd1KMpzf47Q%3D", oauth_signature_method="HMAC-SHA1", oauth_timestamp="1358717138", oauth_token="118162545-ggJen71XWj0GO9nkBUiwBkf6KSaC1PaqytzEnPfc", oauth_version="1.0"'
@@ -57,8 +63,8 @@ class TwitterService {
     }
 
     // Create a string suitable for use as a signature base, according to twitter's rules
-    String makeSignatureBase(String method, String baseUrl, Map params) {
-        def sigVals = [percentEncode(method), percentEncode(baseUrl)]
+    String makeSignatureBase(String method, String path, Map params) {
+        def sigVals = [percentEncode(method), percentEncode(path)]
         sigVals.addAll(percentEncode(sortMap(params).join('&')))
         return sigVals.join('&');
     }
@@ -73,7 +79,44 @@ class TwitterService {
         return mac.encodeBase64().toString()
     }
 
+    Map makeOAuthParams() {
+        return [
+            oauth_consumer_key: consumerKey,
+            oauth_nonce: makeNonce(),
+            oauth_signature_method:  "HMAC-SHA1",,
+            oauth_timestamp: makeTimestamp(),
+            oauth_token: oauthTokenKey,
+            oauth_version:   "1.0"
+        ]
+    }
+
+    String makeAuthHeader(String method, String path, Map queryParams)
+    {
+        Map oauthParams = makeOAuthParams();
+        String base = makeSignatureBase(method, baseUrl + path, queryParams + oauthParams)
+        String signature = percentEncode(makeSignature(base))
+        return "OAuth " +
+            "oauth_consumer_key=\"${oauthParams['oauth_consumer_key']}\", " +
+            "oauth_nonce=\"${oauthParams['oauth_nonce']}\", " +
+            "oauth_signature=\"${signature}\", " +
+            "oauth_signature_method=\"${oauthParams['oauth_signature_method']}\", " +
+            "oauth_timestamp=\"${oauthParams['oauth_timestamp']}\", " +
+            "oauth_token=\"${oauthParams['oauth_token']}\", " +
+            "oauth_version=\"${oauthParams['oauth_version']}\""
+    }
+
+    String makeNonce() {
+        return UUID.randomUUID().toString().replaceAll('-','');
+    }
+
+    String makeTimestamp() {
+        return (new Date().getTime() / 1000)
+    }
+
+
     // Characters that don't have to be encoded under percent encoding.
     static Map percentUnreserved = [
 'A':1, 'B':1, 'C':1, 'D':1, 'E':1, 'F':1, 'G':1, 'H':1, 'I':1, 'J':1, 'K':1, 'L':1, 'M':1, 'N':1, 'O':1, 'P':1, 'Q':1, 'R':1, 'S':1, 'T':1, 'U':1, 'V':1, 'W':1, 'X':1, 'Y':1, 'Z':1, 'a':1, 'b':1, 'c':1, 'd':1, 'e':1, 'f':1, 'g':1, 'h':1, 'i':1, 'j':1, 'k':1, 'l':1, 'm':1, 'n':1, 'o':1, 'p':1, 'q':1, 'r':1, 's':1, 't':1, 'u':1, 'v':1, 'w':1, 'x':1, 'y':1, 'z':1, '0':1, '1':1, '2':1, '3':1, '4':1, '5':1, '6':1, '7':1, '8':1, '9':1, '-':1, '_':1, '.':1, '~':1 ]
+
+    static SecureRandom random = new SecureRandom();
 }
