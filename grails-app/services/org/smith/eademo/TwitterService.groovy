@@ -19,29 +19,6 @@ class TwitterService {
     String oauthTokenKey;
     String baseUrl
 
-    def getTweets() {
-        
-        // Note: this way of doing things actually works.
-        // we can extend this to get somewhere...
-        def http = new HTTPBuilder( 'http://api.twitter.com' )
-        http.request(GET, JSON) { req ->
-            uri.path = '/1.1/search/tweets.json'
-            uri.query = [ q: 'from:ea' ]
-            headers.'Authorization' = 'OAuth oauth_consumer_key="08cnUGc55SxD0C5IixGG6w", oauth_nonce="fe4a7fe6c0373f232526bc9a6ef71270", oauth_signature="L9NRnvzcUFkgDiSBHd1KMpzf47Q%3D", oauth_signature_method="HMAC-SHA1", oauth_timestamp="1358717138", oauth_token="118162545-ggJen71XWj0GO9nkBUiwBkf6KSaC1PaqytzEnPfc", oauth_version="1.0"'
-
-            response.success = { resp, json ->
-                println "Query response: "
-                println "response -->"
-                println resp.dump()
-                println "response <--"
-                println "json -->"
-                println json.dump()
-                println "json <--"
-            }
-        }
-
-        // String url = "http://api.twitter.com/1.1/search/tweets.json?q={}"
-    }
 
     // Percent encode the given string. 
     // Note: this method doesn't work for internationalised characters, such as
@@ -88,6 +65,32 @@ class TwitterService {
             oauth_token: oauthTokenKey,
             oauth_version:   "1.0"
         ]
+    }
+
+    def searchTweets(String queryExp) {
+        String path =  '/1.1/search/tweets.json'
+        Map query = [q:queryExp]
+
+        // Note: this way of doing things actually works.
+        // we can extend this to get somewhere...
+        def http = new HTTPBuilder(baseUrl)
+        http.request(GET, JSON) { req ->
+            uri.path = '/1.1/search/tweets.json'
+            uri.query = query
+            headers.'Authorization' = makeAuthHeader("GET", path, query)
+
+            response.success = { resp, json ->
+                println "Query response: "
+                println "response -->"
+                println resp.dump()
+                println "response <--"
+                println "json -->"
+                println json.dump()
+                println "json <--"
+            }
+        }
+
+        // String url = "http://api.twitter.com/1.1/search/tweets.json?q={}"
     }
 
     String makeAuthHeader(String method, String path, Map queryParams)
