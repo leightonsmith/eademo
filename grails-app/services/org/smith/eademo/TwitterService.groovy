@@ -13,12 +13,38 @@ import java.math.BigInteger
 
 class TwitterService {
 
-    // Secrets and tokens used to identify us
+    // Secrets and tokens used to identify us.
+    // A more complete version of this service would collect these tokens on 
+    // receipt of a twitter user's credentials.
     String consumerSecret;
     String consumerKey;
     String oauthTokenSecret;
     String oauthTokenKey;
     String baseUrl
+
+    def searchTweets(String queryExp) {
+        String path =  '/1.1/search/tweets.json'
+        Map query = [q:queryExp]
+
+        def tweets = []
+        try {
+            def http = new HTTPBuilder(baseUrl)
+            http.request(GET, JSON) { req ->
+                uri.path = '/1.1/search/tweets.json'
+                uri.query = query
+                headers.'Authorization' = makeAuthHeader("GET", path, query)
+
+                response.success = { resp, json ->
+                    tweets = json['statuses'].collect { def status -> status }
+                }
+            }
+        }
+        // TODO: handle failure better. We're just returning an empty list at present
+        catch (HttpResponseException e) {
+            log.warn "exception fetching tweets: ${e.message}"
+        }
+        return tweets
+    }
 
     // Percent encode the given string. 
     // Note: this method doesn't work for internationalised characters, such as
@@ -67,29 +93,6 @@ class TwitterService {
         ]
     }
 
-    def searchTweets(String queryExp) {
-        String path =  '/1.1/search/tweets.json'
-        Map query = [q:queryExp]
-
-        def tweets = []
-        try {
-            def http = new HTTPBuilder(baseUrl)
-            http.request(GET, JSON) { req ->
-                uri.path = '/1.1/search/tweets.json'
-                uri.query = query
-                headers.'Authorization' = makeAuthHeader("GET", path, query)
-
-                response.success = { resp, json ->
-                    tweets = json['statuses'].collect { def status -> status }
-                }
-            }
-        }
-        // TODO: handle failure properly. We're just returning an empty list at present
-        catch (HttpResponseException e) {
-            log.warn "exception fetching tweets: ${e.message}"
-        }
-        return tweets
-    }
 
     String makeAuthHeader(String method, String path, Map queryParams)
     {
@@ -113,7 +116,6 @@ class TwitterService {
     String makeTimestamp() {
         return (new Date().getTime() / 1000)
     }
-
 
     // Characters that don't have to be encoded under percent encoding.
     static Map percentUnreserved = [
